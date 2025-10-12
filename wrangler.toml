@@ -1,4 +1,4 @@
-name = "dramabox-api"
+name = 'dracin-api'
 main = "src/worker.js"
 compatibility_date = "2025-01-10"
 
