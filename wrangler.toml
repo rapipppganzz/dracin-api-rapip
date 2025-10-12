@@ -22,5 +22,5 @@ workers_dev = false
 command = ""
 
 # Limits (optional - these are defaults)
-[limits]
-cpu_ms = 50
+#[limits]
+#cpu_ms = 50
