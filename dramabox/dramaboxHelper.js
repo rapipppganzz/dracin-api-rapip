@@ -1,7 +1,6 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import crypto from "crypto";
-import { DramaboxApp } from "./sign.js";
 
 function randomAndroidId() {
   return "ffffffff" + crypto.randomBytes(4).toString("hex") + "000000000";
@@ -9,7 +8,10 @@ function randomAndroidId() {
 
 export const getToken = async (payload, timestamp) => {
   try {
-    const url = `https://sapi.dramaboxdb.com/drama-box/ap001/bootstrap?timestamp=${timestamp}`;
+    // Paksa timestamp jadi Date.now() kalau undefined
+    const ts = timestamp || Date.now();
+    const url = `https://sapi.dramaboxdb.com/drama-box/ap001/bootstrap?timestamp=${ts}`;
+    
     const deviceId = uuidv4(35);
     const androidId = randomAndroidId();
     const headers = {
@@ -32,11 +34,12 @@ export const getToken = async (payload, timestamp) => {
     };
 
     const body = JSON.stringify({ distinctId: null });
-    const res = await axios.post(url, { distinctId: null }, {headers});
+    const res = await axios.post(url, { distinctId: null }, { headers });
 
-    if(!res.data?.data?.user){
-      return await getToken(payload, timestamp);
+    if (!res.data?.data?.user) {
+      return await getToken(payload, ts);
     }
+    
     const tokenData = {
       token: res.data.data.user.token,
       deviceId,
@@ -48,19 +51,19 @@ export const getToken = async (payload, timestamp) => {
 
     return tokenData;
   } catch (error) {
-    console.error("[ERROR] Gagal mengambil token:", error);
+    console.error("[ERROR] Gagal mengambil token:", error.message);
     throw error;
   }
 };
-
-
-
 
 /**
  * Generate headers lengkap siap pakai
  */
 export const getHeaders = async (payload, timestamp) => {
-  const { token, deviceId, androidId, uuid} = await getToken(payload, timestamp);
+  // Paksa timestamp jadi Date.now() kalau undefined
+  const ts = timestamp || Date.now();
+  const { token, deviceId, androidId, uuid } = await getToken(payload, ts);
+  
   const headers = {
     "Host": "sapi.dramaboxdb.com",
     "tn": `Bearer ${token}`,
@@ -82,7 +85,6 @@ export const getHeaders = async (payload, timestamp) => {
     "Content-Type": "application/json; charset=UTF-8",
     "User-Agent": "okhttp/4.10.0",
   };
-  const body = JSON.stringify(payload);
   return headers;
 };
 
